@@ -59,6 +59,7 @@ read_button_input:
     @ return 0
     mov r0, #0                      @ r0 <-- 0
 L0: 
+    ldr r0, [r7]
     add r7, r7, #4                  @ 
     mov sp, r7                      @ 
     pop {r7}
@@ -69,62 +70,57 @@ is_button_pressed:
     sub sp, sp, #16                 @ reserves a 24 bytes function frame
     add r7, sp, #0                  @ updates r7
     str r0, [r7, #4]                @ backs function argument up
-    ldr r0, [r7, #4]                @ r0 <-- 
-    bl read_button_input
-    ldr r3, [r7, #4]
-    cmp r0, r3
-    beq L1
-    mov r0, #0
-    add r7, r7, #16
+    ldr r0, [r7, #4]                @ r0 <-- function argument 
+    bl read_button_input            @ branch to read_button_input
+    ldr r3, [r7, #4]                @ r3 <-- function argument
+    cmp r0, r3                      @ compare r0 with r3
+    beq L1                          @ branch to L1 if r0 equal r3
+    mov r0, #0                      @ r0 <-- 0
+    add r7, r7, #16                 
     mov sp, r7
     pop {r7}
     pop {lr}
     bx lr
 L1: 
-    #c = 0
-    mov r3, #0
-    str r3, [r7, #8]
+    mov r3, #0                      @ r3 <--- 0
+    str r3, [r7, #8]                @ store r3
     #for (int i=0; i<10; i++)
-    mov r3, #0
-    str r3, [r7, #12]
-    b L2
+    mov r3, #0                      @ r3 <-- 0
+    str r3, [r7, #12]               @ store r3
+    b L2                            @ branch to L2
 L5: 
-    # wait 5 ms
-    mov r0, #50
-    bl wait_ms
+    mov r0, #50                     @ r0 <-- 50
+    bl wait_ms                      @ branch to wait_ms function
     #read button input
-    ldr r0, [r7, #4]
-    bl read_button_input
-    ldr r3, [r7, #4]
-    cmp r0, r3
-    beq L3
-    mov r3, #0
-    str r3, [r7, #8]
+    ldr r0, [r7, #4]                @ r0 <-- function argument
+    bl read_button_input            @ branch to read read_button_input
+    ldr r3, [r7, #4]                @ r3 <-- function argument 
+    cmp r0, r3                      @ compare r0 with r3    
+    beq L3                          @ branch to L3 if r0 equal r3
+    mov r3, #0                      @ r3 <-- 0
+    str r3, [r7, #8]                @ store 0
 L3: 
-    # c++
-    ldr r3, [r7, #8]
-    add r3, #1
-    str r3, [r7, #8]
-    ldr r3, [r7, #8]
-    cmp r3, #4
-    blt L4
-    ldr r0, [r7, #4]
-    add r7, r7, #16
+    ldr r3, [r7, #8]                @ r3 <-- 0
+    add r3, #1                      @ c++
+    str r3, [r7, #8]                @ store c++
+    ldr r3, [r7, #8]                @ r3 <-- c
+    cmp r3, #4                      @ compare r3 with 4
+    blt L4                          @ branch to L4 if r3 less than 4
+    ldr r0, [r7, #4]                @ r0 <-- function argument
+    add r7, r7, #16                 
     mov sp, r7
     pop {r7}
     pop {lr}
     bx lr
 L4: 
-    ldr r3, [r7, #12]       @ j++
-    add r3, #1
-    str r3, [r7, #12]        
-
-L2: ldr r3, [r7, #12]
-    cmp r3, #10
-    blt L5
-
-    # return 0
-    mov r0, #0
+    ldr r3, [r7, #12]               @ r3 <-- j
+    add r3, #1                      @ j++
+    str r3, [r7, #12]               @ store j++
+L2: ldr r3, [r7, #12]               @ r3 <-- j
+    cmp r3, #10                     @ compare r3 with 10 
+    blt L5                          @ branch to L5 if r3 less than 10
+    # Epilogue
+    mov r0, #0                      @ return 0
     add r7, r7, #16
     mov sp, r7
     pop {r7}
