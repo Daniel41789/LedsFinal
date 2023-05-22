@@ -53,17 +53,17 @@ read_button_input:
     ldr r1, =GPIOA_IDR              @ load address
     ldr r1, [r1]                    @ load value
     ldr r0, [r7]                    @ load value of function argument
-    and r1, r1, r0                  @ 
+    and r1, r1, r0                   
     cmp r1, r0                      @ compare r1 with r0
     beq L0                          @ branch if r1 is equal r0
     @ return 0
     mov r0, #0                      @ r0 <-- 0
 L0: 
-    ldr r0, [r7]
-    add r7, r7, #4                  @ 
-    mov sp, r7                      @ 
+    # Epilogue
+    adds r7, r7, #4                  
+    mov sp, r7                      
     pop {r7}
-    bx lr    
+    bx lr                           
 
 is_button_pressed:
     push {r7, lr}                   @ backs r7 and lr up
@@ -76,24 +76,23 @@ is_button_pressed:
     cmp r0, r3                      @ compare r0 with r3
     beq L1                          @ branch to L1 if r0 equal r3
     mov r0, #0                      @ r0 <-- 0
-    add r7, r7, #16                 
-    mov sp, r7
+    adds r7, r7, #16                 
+    mov sp, r7                      
     pop {r7}
     pop {lr}
     bx lr
 L1: 
     mov r3, #0                      @ r3 <--- 0
     str r3, [r7, #8]                @ store r3
-    #for (int i=0; i<10; i++)
+    # for (int i=0; i<10; i++)
     mov r3, #0                      @ r3 <-- 0
     str r3, [r7, #12]               @ store r3
     b L2                            @ branch to L2
 L5: 
     mov r0, #50                     @ r0 <-- 50
     bl wait_ms                      @ branch to wait_ms function
-    #read button input
     ldr r0, [r7, #4]                @ r0 <-- function argument
-    bl read_button_input            @ branch to read read_button_input
+    bl read_button_input            @ branch to read read_button_input function
     ldr r3, [r7, #4]                @ r3 <-- function argument 
     cmp r0, r3                      @ compare r0 with r3    
     beq L3                          @ branch to L3 if r0 equal r3
@@ -107,7 +106,7 @@ L3:
     cmp r3, #4                      @ compare r3 with 4
     blt L4                          @ branch to L4 if r3 less than 4
     ldr r0, [r7, #4]                @ r0 <-- function argument
-    add r7, r7, #16                 
+    adds r7, r7, #16                 
     mov sp, r7
     pop {r7}
     pop {lr}
@@ -116,12 +115,14 @@ L4:
     ldr r3, [r7, #12]               @ r3 <-- j
     add r3, #1                      @ j++
     str r3, [r7, #12]               @ store j++
-L2: ldr r3, [r7, #12]               @ r3 <-- j
+L2: 
+    ldr r3, [r7, #12]               @ r3 <-- j
     cmp r3, #10                     @ compare r3 with 10 
     blt L5                          @ branch to L5 if r3 less than 10
+
     # Epilogue
     mov r0, #0                      @ return 0
-    add r7, r7, #16
+    adds r7, r7, #16
     mov sp, r7
     pop {r7}
     pop {lr}
@@ -129,18 +130,15 @@ L2: ldr r3, [r7, #12]               @ r3 <-- j
 
 
 reset:
-    @ prologue
-    push {r7, lr}
-    sub sp, sp, #8
-    add r7, sp, #0
-    str r0, [r7, #4]
-    @ body function
-    ldr r1, = GPIOB_ODR
-    mov r2, 0x0
-    str r2, [r1]
-    str r2, [r7, #4]
-    ldr r0, [r7, #4]
-    @ epilogue
+    # prologue
+    push {r7, lr}                   @ backs r7 and lr up
+    sub sp, sp, #8                  @ reserves a 16 bytes function frame
+    add r7, sp, #0                  @ updates r7
+    # body function
+    ldr r0, = GPIOB_ODR
+    mov r1, 0x0
+    str r1, [r0]
+    # epilogue
     adds r7, r7, #8
     mov sp, r7
     pop {r7}
@@ -213,10 +211,10 @@ setup:
     @ set pins PA0 & PA4 as digital input
     ldr r0, =GPIOA_CRL
     ldr r1, =0x44484448
-    ldr r1, [r0]
+    str r1, [r0]
 
     @ set pins PB8 - PB15 as digital output
-    ldr r0, =GPIO_CRH
+    ldr r0, =GPIOB_CRH
     ldr r1, =0x33333333
     str r1, [r0]
 
@@ -229,26 +227,26 @@ setup:
     str r1, [r7, #4]
 
 loop:
-    mov r0, #17                     @ and with 17 <-- 0001 0001 (PA0 and PA4)
+    mov r0, #0x11                     @ and with 17 <-- 0001 0001 (PA0 and PA4)
     bl is_button_pressed            @ function call is_button_pressed
-    cmp r0, #17                     @ compare function return with 0001 0001
+    cmp r0, #0x11                     @ compare function return with 0001 0001
     bne L8                          @ branch if r0 not equal 17
     bl reset                        @ function call reset
     str r0, [r7, #4]                @ 
 L8:
     # verificación del 'push button' (PA0)
-    mov r0, #1                      @ r0 <-- 1 <-- 0000 0001
+    mov r0, #0x01                      @ r0 <-- 1 <-- 0000 0001
     bl is_button_pressed            @ function call is_button_pressed
-    cmp r0, #1                      @ compare function return with 1
+    cmp r0, #0x01                      @ compare function return with 1
     bne L9                          @ branch if r0 not equal 1
     ldr r0, [r7, #4]
     bl incremento                   @ function call incremento
     str r0, [r7, #4]
 L9:
     # verificación del 'push button' (PA4)
-    mov r0, #16                     @ r0 <-- 16 <-- 0001 0000 (PA4)
+    mov r0, #0x10                     @ r0 <-- 16 <-- 0001 0000 (PA4)
     bl is_button_pressed            @ function call is_button_pressed
-    cmp r0, #16                     @ compare r0 with #16
+    cmp r0, #0x10                     @ compare r0 with #16
     bne L10                         @ branch to L8 if r0 not equal 16
     ldr r0, [r7, #4]                @
     bl decremento                   @ function call decremento
