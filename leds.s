@@ -135,9 +135,10 @@ reset:
     sub sp, sp, #8                  @ reserves a 16 bytes function frame
     add r7, sp, #0                  @ updates r7
     # body function
-    ldr r0, = GPIOB_ODR
-    mov r1, 0x0
-    str r1, [r0]
+    str r0, [r7, #4]
+    mov r0, #0
+    str r0, [r7, #4]
+    ldr r0, [r7, #4]
     # epilogue
     adds r7, r7, #8
     mov sp, r7
@@ -158,13 +159,13 @@ incremento:
     adds r0, r0, #1         @ counter++
     str r0, [r7,#4]         @ store counter++
     ldr r0, [r7, #4]
-    ldr r1, =0x100          @ load 256 in r1 -> 2 ^ 8 Leds = 256
+    mov r1, #255
     cmp r0, r1              @ compare r0 with r1
     ble L6
     bl reset
     str r0, [r7, #4]        @ store counter
 L6:
-    ldr r0, [r0, #4] 
+    ldr r0, [r7, #4] 
     @ epilogue
     adds r7, r7, #8
     mov sp, r7
@@ -181,7 +182,7 @@ decremento:
     
     @ body function
     ldr r0, [r7, #4]
-    sub r0, r0, #1          @ r0 <- r0 - 1 
+    subs r0, r0, #1          @ r0 <- r0 - 1 
     str r0, [r7, #4]        @ store r0 in d
     ldr r0, [r7, #4]
     cmp r0, #0
@@ -235,9 +236,9 @@ loop:
     str r0, [r7, #4]                @ 
 L8:
     # verificación del 'push button' (PA0)
-    mov r0, #0x01                      @ r0 <-- 1 <-- 0000 0001
+    mov r0, #0x1                      @ r0 <-- 1 <-- 0000 0001
     bl is_button_pressed            @ function call is_button_pressed
-    cmp r0, #0x01                      @ compare function return with 1
+    cmp r0, #0x1                      @ compare function return with 1
     bne L9                          @ branch if r0 not equal 1
     ldr r0, [r7, #4]
     bl incremento                   @ function call incremento
